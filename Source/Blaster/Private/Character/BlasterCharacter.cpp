@@ -320,6 +320,11 @@ bool ABlasterCharacter::IsAiming()
 	return (CombatComponent && CombatComponent->bIsAiming);
 }
 
+FVector ABlasterCharacter::GetHitTarget()
+{
+	return CombatComponent ? CombatComponent->HitTarget : FVector();
+}
+
 AWeapon* ABlasterCharacter::GetEquippedWeapon()
 {
 	if (!CombatComponent) return nullptr;

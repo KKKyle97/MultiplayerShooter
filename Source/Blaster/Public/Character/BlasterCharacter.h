@@ -85,5 +85,7 @@ public:
 	FORCEINLINE float GetAO_Yaw() { return AO_Yaw; }
 	FORCEINLINE float GetAO_Pitch() { return AO_Pitch; }
 	FORCEINLINE ETurningInPlace GetTurningInplace() { return TurningInPlace; }
+	FVector GetHitTarget();
 	AWeapon* GetEquippedWeapon();
+	FORCEINLINE UCameraComponent* GetFollowCamera() { return CameraComponent; }
 };
