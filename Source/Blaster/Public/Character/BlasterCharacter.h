@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "TurningInPlace.h"
+#include "Blaster/Interface/BlasterDamagableInterface.h"
 #include "GameFramework/Character.h"
 #include "BlasterCharacter.generated.h"
 
@@ -13,7 +14,7 @@ class UCameraComponent;
 class USpringArmComponent;
 class UWidgetComponent;
 UCLASS()
-class BLASTER_API ABlasterCharacter : public ACharacter
+class BLASTER_API ABlasterCharacter : public ACharacter, public IBlasterDamagableInterface
 {
 	GENERATED_BODY()
 
@@ -27,6 +28,7 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void PostInitializeComponents() override;
 	void PlayFireMontage(bool bIsAiming);
+	void PlayHitReactMontage();
 
 protected:
 	// Called when the game starts or when spawned
@@ -58,6 +60,9 @@ private:
 	UPROPERTY(ReplicatedUsing = "OnRep_CharacterWeapon")
 	AWeapon* CharacterWeapon;
 
+	UPROPERTY(EditAnywhere, Category = "Camera")
+	float CameraThreshold = 300.f;
+
 	UFUNCTION()
 	void OnRep_CharacterWeapon(AWeapon* LastWeapon);
 
@@ -78,6 +83,11 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	UAnimMontage* FireWeaponMontage;
 
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	UAnimMontage* HitReactMontage;
+
+	void HideCameraIfCharacterIsClose();
+
 public:
 	void SetOverlappingWeapon(AWeapon* Weapon);
 	bool IsWeaponEquipped();
@@ -88,4 +98,7 @@ public:
 	FVector GetHitTarget();
 	AWeapon* GetEquippedWeapon();
 	FORCEINLINE UCameraComponent* GetFollowCamera() { return CameraComponent; }
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastHit();
 };
