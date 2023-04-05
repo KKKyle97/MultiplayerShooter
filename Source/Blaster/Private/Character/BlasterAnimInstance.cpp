@@ -39,19 +39,13 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	bIsCrouched = BlasterCharacter->bIsCrouched;
 	bIsAiming = BlasterCharacter->IsAiming();
 	TurningInPlace = BlasterCharacter->GetTurningInplace();
+	bRotateRootBone = BlasterCharacter->ShouldRotateRootBone();
 
 	const FRotator AimRotation = BlasterCharacter->GetBaseAimRotation();
 	const FRotator MovementRotation = UKismetMathLibrary::MakeRotFromX(BlasterCharacter->GetVelocity());
 	FRotator DeltaRot = UKismetMathLibrary::NormalizedDeltaRotator(MovementRotation, AimRotation);
 	DeltaRotation = FMath::RInterpTo(DeltaRotation, DeltaRot, DeltaSeconds, 5.f);
 	YawOffSet = DeltaRotation.Yaw;
-
-	if (BlasterCharacter->HasAuthority())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Aim Rotation: %f"), AimRotation.Yaw);
-		UE_LOG(LogTemp, Warning, TEXT("Movement Rotation: %s"), *MovementRotation.ToString());
-	}
-
 
 	CharacterRotationLastFrame = CharacterRotationCurrentFrame;
 	CharacterRotationCurrentFrame = BlasterCharacter->GetActorRotation();

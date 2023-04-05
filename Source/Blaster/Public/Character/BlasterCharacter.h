@@ -8,6 +8,7 @@
 #include "GameFramework/Character.h"
 #include "BlasterCharacter.generated.h"
 
+class ABlasterPlayerController;
 class UCombatComponent;
 class AWeapon;
 class UCameraComponent;
@@ -30,6 +31,8 @@ public:
 	void PlayFireMontage(bool bIsAiming);
 	void PlayHitReactMontage();
 
+	virtual void OnRep_ReplicatedMovement() override;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -42,9 +45,16 @@ protected:
 	void CrouchButtonPressed();
 	void AimButtonPressed();
 	void AimButtonReleased();
+	void CalculateAO_Pitch();
+	float CalculateSpeed();
 	void AimOffSet(float DeltaSeconds);
+	void SimProxiesTurn();
 	void FireButtonPressed();
 	void FireButtonReleased();
+
+	UFUNCTION()
+	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* ControllerInstigator, AActor* DamageCauser);
+	void UpdateHUDHealth();
 	virtual void Jump() override;
 
 private:
@@ -88,6 +98,28 @@ private:
 
 	void HideCameraIfCharacterIsClose();
 
+	bool bRotateRootBone;
+	float TurnThreshold = 0.5f;
+	FRotator ProxyRotationLastFrame;
+	FRotator ProxyRotation;
+	float ProxyYaw;
+	float TimeSinceLastMovementReplicated;
+
+	/*
+	 * Player Health
+	 */
+
+	UPROPERTY(EditAnywhere, Category = "Player Stats")
+	float MaxHealth = 100.f;
+
+	UPROPERTY(ReplicatedUsing=OnRep_Health, VisibleAnywhere, Category = "Player Stats")
+	float Health = 100.f;
+
+	UFUNCTION()
+	void OnRep_Health();
+
+	ABlasterPlayerController* BlasterPlayerController;
+
 public:
 	void SetOverlappingWeapon(AWeapon* Weapon);
 	bool IsWeaponEquipped();
@@ -98,7 +130,5 @@ public:
 	FVector GetHitTarget();
 	AWeapon* GetEquippedWeapon();
 	FORCEINLINE UCameraComponent* GetFollowCamera() { return CameraComponent; }
-
-	UFUNCTION(NetMulticast, Unreliable)
-	void MulticastHit();
+	FORCEINLINE bool ShouldRotateRootBone() const { return bRotateRootBone; }
 };
