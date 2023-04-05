@@ -30,7 +30,7 @@ public:
 	virtual void PostInitializeComponents() override;
 	void PlayFireMontage(bool bIsAiming);
 	void PlayHitReactMontage();
-
+	void Elim();
 	virtual void OnRep_ReplicatedMovement() override;
 
 protected:
