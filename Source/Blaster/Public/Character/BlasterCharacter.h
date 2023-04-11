@@ -9,12 +9,14 @@
 #include "GameFramework/Character.h"
 #include "BlasterCharacter.generated.h"
 
+class ABlasterPlayerState;
 class ABlasterPlayerController;
 class UCombatComponent;
 class AWeapon;
 class UCameraComponent;
 class USpringArmComponent;
 class UWidgetComponent;
+class USoundCue;
 UCLASS()
 class BLASTER_API ABlasterCharacter : public ACharacter, public IBlasterDamagableInterface
 {
@@ -37,6 +39,7 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastElim();
 	virtual void OnRep_ReplicatedMovement() override;
+	virtual void Destroyed() override;
 
 protected:
 	// Called when the game starts or when spawned
@@ -60,6 +63,7 @@ protected:
 	UFUNCTION()
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* ControllerInstigator, AActor* DamageCauser);
 	void UpdateHUDHealth();
+	void PollInit();
 	virtual void Jump() override;
 
 private:
@@ -126,6 +130,7 @@ private:
 	UFUNCTION()
 	void OnRep_Health();
 
+	UPROPERTY()
 	ABlasterPlayerController* BlasterPlayerController;
 
 
@@ -159,6 +164,22 @@ private:
 	UPROPERTY(EditAnywhere, Category = Elim)
 	UMaterialInstance* DissolveMaterialInstance;
 
+	/*
+	 * Elim bot
+	 */
+
+	UPROPERTY(EditAnywhere)
+	UParticleSystem* ElimBotEffect;
+
+	UPROPERTY(VisibleAnywhere)
+	UParticleSystemComponent* ElimBotComponent;
+
+	UPROPERTY(EditAnywhere)
+	USoundCue* ElimBotSound;
+
+	UPROPERTY()
+	ABlasterPlayerState* BlasterPlayerState;
+
 public:
 	void SetOverlappingWeapon(AWeapon* Weapon);
 	bool IsWeaponEquipped();
@@ -171,4 +192,6 @@ public:
 	FORCEINLINE UCameraComponent* GetFollowCamera() { return CameraComponent; }
 	FORCEINLINE bool ShouldRotateRootBone() const { return bRotateRootBone; }
 	FORCEINLINE bool IsElimmed() const { return bElimmed; }
+	FORCEINLINE float GetHealth() const { return Health; }
+	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
 };
