@@ -7,6 +7,7 @@
 #include "Blaster/Interface/BlasterDamagableInterface.h"
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Character.h"
+#include "Weapon/CombatState.h"
 #include "BlasterCharacter.generated.h"
 
 class ABlasterPlayerState;
@@ -32,6 +33,7 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void PostInitializeComponents() override;
 	void PlayFireMontage(bool bIsAiming);
+	void PlayReloadMontage();
 	void PlayElimMontage();
 	void PlayHitReactMontage();
 	void Elim();
@@ -51,6 +53,7 @@ protected:
 	void Lookup(float Value);
 	void EquipButtonPressed();
 	void CrouchButtonPressed();
+	void ReloadButtonPressed();
 	void AimButtonPressed();
 	void AimButtonReleased();
 	void CalculateAO_Pitch();
@@ -85,7 +88,7 @@ private:
 	UFUNCTION()
 	void OnRep_CharacterWeapon(AWeapon* LastWeapon);
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = ( AllowPrivateAccess = true))
 	UCombatComponent* CombatComponent;
 
 	UFUNCTION(Server, Reliable)
@@ -103,10 +106,15 @@ private:
 	UAnimMontage* FireWeaponMontage;
 
 	UPROPERTY(EditAnywhere, Category = "Combat")
+	UAnimMontage* ReloadMontage;
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
 	UAnimMontage* HitReactMontage;
 
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	UAnimMontage* ElimMontage;
+
+
 
 	void HideCameraIfCharacterIsClose();
 
@@ -194,4 +202,5 @@ public:
 	FORCEINLINE bool IsElimmed() const { return bElimmed; }
 	FORCEINLINE float GetHealth() const { return Health; }
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
+	ECombatState GetCombatState();
 };
