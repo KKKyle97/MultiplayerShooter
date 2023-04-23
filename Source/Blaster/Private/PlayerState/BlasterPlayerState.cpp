@@ -39,7 +39,7 @@ void ABlasterPlayerState::AddToScore(float ScoreAmount)
 		PlayerController = !PlayerController ? Cast<ABlasterPlayerController>(Character->Controller) : PlayerController;
 		if (PlayerController)
 		{
-			PlayerController->SetHUDScore(ScoreAmount);
+			PlayerController->SetHUDScore(GetScore());
 		}
 	}
 }

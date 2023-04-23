@@ -43,6 +43,9 @@ public:
 	virtual void OnRep_ReplicatedMovement() override;
 	virtual void Destroyed() override;
 
+	UPROPERTY(Replicated)
+	bool bDisableGameplay = false;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -67,6 +70,7 @@ protected:
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* ControllerInstigator, AActor* DamageCauser);
 	void UpdateHUDHealth();
 	void PollInit();
+	void RotateInPlace(float DeltaTime);
 	virtual void Jump() override;
 
 private:
@@ -203,4 +207,6 @@ public:
 	FORCEINLINE float GetHealth() const { return Health; }
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
 	ECombatState GetCombatState();
+	FORCEINLINE UCombatComponent* GetCombatComponent() { return CombatComponent; }
+	FORCEINLINE bool GetDisableGameplay() { return bDisableGameplay; }
 };

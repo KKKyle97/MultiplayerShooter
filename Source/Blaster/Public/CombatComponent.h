@@ -30,6 +30,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void FinishReloading();
+
+	void FireButtonPressed(bool bPressed);
+
 	void UpdateAmmoValues();
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
@@ -43,8 +46,6 @@ protected:
 	UFUNCTION()
 	void OnRep_EquippedWeapon();
 	void Fire();
-
-	void FireButtonPressed(bool bPressed);
 
 	UFUNCTION(Server, Reliable)
 	void ServerFire(const FVector_NetQuantize& TraceHitTarget);
@@ -132,6 +133,12 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	int32 StartingARAmmo = 30;
+
+	UPROPERTY(EditAnywhere)
+	int32 StartingRocketAmmo = 0;
+
+	UPROPERTY(EditAnywhere)
+	int32 StartingPistolAmmo = 0;
 
 	void InitializeCarriedAmmo();
 
