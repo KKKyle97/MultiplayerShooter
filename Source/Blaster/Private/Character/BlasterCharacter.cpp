@@ -6,6 +6,7 @@
 #include "CombatComponent.h"
 #include "Blaster/Blaster.h"
 #include "Camera/CameraComponent.h"
+#include "Character/BuffComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -44,6 +45,9 @@ ABlasterCharacter::ABlasterCharacter()
 	CombatComponent = CreateDefaultSubobject<UCombatComponent>("CombatComponent");
 	CombatComponent->SetIsReplicated(true);
 
+	BuffComponent = CreateDefaultSubobject<UBuffComponent>("BuffComponent");
+	BuffComponent->SetIsReplicated(true);
+
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetCollisionObjectType(ECC_SkeletalMesh);
@@ -57,6 +61,11 @@ ABlasterCharacter::ABlasterCharacter()
 	MinNetUpdateFrequency = 33.f;
 
 	DissolveTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("DissolveTimelineComponent"));
+
+	AttachedGrenade = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Attached Grenade"));
+	AttachedGrenade->SetupAttachment(GetMesh(), FName("GrenadeSocket"));
+	AttachedGrenade->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
 }
 
 void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -124,6 +133,10 @@ void ABlasterCharacter::BeginPlay()
 	{
 		OnTakeAnyDamage.AddDynamic(this, &ThisClass::ABlasterCharacter::ReceiveDamage);
 	}
+	if (AttachedGrenade)
+	{
+		AttachedGrenade->SetVisibility(false);
+	}
 }
 
 // Called every frame
@@ -152,6 +165,7 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAction(TEXT("Aim"), IE_Pressed, this, &ABlasterCharacter::AimButtonPressed);
 	PlayerInputComponent->BindAction(TEXT("Aim"), IE_Released, this, &ABlasterCharacter::AimButtonReleased);
 	PlayerInputComponent->BindAction(TEXT("Reload"), IE_Pressed, this, &ABlasterCharacter::ReloadButtonPressed);
+	PlayerInputComponent->BindAction(TEXT("ThrowGrenade"), IE_Pressed, this, &ABlasterCharacter::GrenadeButtonPressed);
 
 }
 
@@ -161,6 +175,15 @@ void ABlasterCharacter::PostInitializeComponents()
 	if (CombatComponent)
 	{
 		CombatComponent->Character = this;
+	}
+	if (BuffComponent)
+	{
+		BuffComponent->BlasterCharacter = this;
+		BuffComponent->SetInitialSpeeds(
+			GetCharacterMovement()->MaxWalkSpeed,
+			GetCharacterMovement()->MaxWalkSpeedCrouched
+		);
+		BuffComponent->SetInitialJumpVelocity(GetCharacterMovement()->JumpZVelocity);
 	}
 }
 
@@ -194,18 +217,21 @@ void ABlasterCharacter::PlayReloadMontage()
 			SectionName = FName("Rifle");
 			break;
 		case EWeaponType::EWT_RocketLauncher:
-			SectionName = FName("Rifle");
+			SectionName = FName("RocketLauncher");
 			break;
 		case EWeaponType::EWT_Pistol:
-			SectionName = FName("Rifle");
+			SectionName = FName("Pistol");
 			break;
 		case EWeaponType::EWT_SubMachinegun:
-			SectionName = FName("Rifle");
+			SectionName = FName("Pistol");
 			break;
 		case EWeaponType::EWT_Shotgun:
-			SectionName = FName("Rifle");
+			SectionName = FName("Shotgun");
 			break;
 		case EWeaponType::EWT_SniperRifle:
+			SectionName = FName("Sniper");
+			break;
+		case EWeaponType::EWT_GrenadeLauncher:
 			SectionName = FName("Rifle");
 			break;
 		}
@@ -233,6 +259,15 @@ void ABlasterCharacter::PlayHitReactMontage()
 		AnimInstance->Montage_Play(HitReactMontage);
 		FName SectionName("FromFront");
 		AnimInstance->Montage_JumpToSection(SectionName);
+	}
+}
+
+void ABlasterCharacter::PlayThrowGrenadeMontage()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && ThrowGrenadeMontage)
+	{
+		AnimInstance->Montage_Play(ThrowGrenadeMontage);
 	}
 }
 
@@ -528,9 +563,18 @@ void ABlasterCharacter::FireButtonReleased()
 	}
 }
 
-void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
-	AController* ControllerInstigator, AActor* DamageCauser)
+void ABlasterCharacter::GrenadeButtonPressed()
 {
+	if (CombatComponent)
+	{
+		CombatComponent->ThrowGrenade();
+	}
+}
+
+void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
+                                      AController* ControllerInstigator, AActor* DamageCauser)
+{
+	if (bElimmed) return;
 	Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
 	UpdateHUDHealth();
 	PlayHitReactMontage();
@@ -624,10 +668,13 @@ void ABlasterCharacter::HideCameraIfCharacterIsClose()
 	}
 }
 
-void ABlasterCharacter::OnRep_Health()
+void ABlasterCharacter::OnRep_Health(float LastHealth)
 {
 	UpdateHUDHealth();
-	PlayHitReactMontage();
+	if (Health < LastHealth)
+	{
+		PlayHitReactMontage();
+	}
 }
 
 void ABlasterCharacter::ElimTimerFinished()

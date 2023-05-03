@@ -10,6 +10,7 @@
 #include "Weapon/CombatState.h"
 #include "BlasterCharacter.generated.h"
 
+class UBuffComponent;
 class ABlasterPlayerState;
 class ABlasterPlayerController;
 class UCombatComponent;
@@ -36,7 +37,9 @@ public:
 	void PlayReloadMontage();
 	void PlayElimMontage();
 	void PlayHitReactMontage();
+	void PlayThrowGrenadeMontage();
 	void Elim();
+	void UpdateHUDHealth();
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastElim();
@@ -68,10 +71,10 @@ protected:
 	void SimProxiesTurn();
 	void FireButtonPressed();
 	void FireButtonReleased();
+	void GrenadeButtonPressed();
 
 	UFUNCTION()
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* ControllerInstigator, AActor* DamageCauser);
-	void UpdateHUDHealth();
 	void PollInit();
 	void RotateInPlace(float DeltaTime);
 	virtual void Jump() override;
@@ -98,6 +101,9 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = ( AllowPrivateAccess = true))
 	UCombatComponent* CombatComponent;
 
+	UPROPERTY(VisibleAnywhere)
+	UBuffComponent* BuffComponent;
+
 	UFUNCTION(Server, Reliable)
 	void ServerEquipButtonPressed();
 
@@ -121,7 +127,8 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	UAnimMontage* ElimMontage;
 
-
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	UAnimMontage* ThrowGrenadeMontage;
 
 	void HideCameraIfCharacterIsClose();
 
@@ -143,7 +150,7 @@ private:
 	float Health = 100.f;
 
 	UFUNCTION()
-	void OnRep_Health();
+	void OnRep_Health(float LastHealth);
 
 	UPROPERTY()
 	ABlasterPlayerController* BlasterPlayerController;
@@ -195,6 +202,13 @@ private:
 	UPROPERTY()
 	ABlasterPlayerState* BlasterPlayerState;
 
+	/**
+	 * Grenade
+	 **/
+
+	UPROPERTY(VisibleAnywhere)
+	UStaticMeshComponent* AttachedGrenade;
+
 public:
 	void SetOverlappingWeapon(AWeapon* Weapon);
 	bool IsWeaponEquipped();
@@ -204,12 +218,16 @@ public:
 	FORCEINLINE ETurningInPlace GetTurningInplace() { return TurningInPlace; }
 	FVector GetHitTarget();
 	AWeapon* GetEquippedWeapon();
-	FORCEINLINE UCameraComponent* GetFollowCamera() { return CameraComponent; }
+	FORCEINLINE UCameraComponent* GetFollowCamera() const { return CameraComponent; }
 	FORCEINLINE bool ShouldRotateRootBone() const { return bRotateRootBone; }
 	FORCEINLINE bool IsElimmed() const { return bElimmed; }
 	FORCEINLINE float GetHealth() const { return Health; }
+	FORCEINLINE void SetHealth(float Amount) { Health = Amount; }
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
 	ECombatState GetCombatState();
 	FORCEINLINE UCombatComponent* GetCombatComponent() { return CombatComponent; }
-	FORCEINLINE bool GetDisableGameplay() { return bDisableGameplay; }
+	FORCEINLINE bool GetDisableGameplay() const { return bDisableGameplay; }
+	FORCEINLINE UAnimMontage* GetReloadMontage() const { return ReloadMontage; }
+	FORCEINLINE UStaticMeshComponent* GetAttachedGrenade() const { return AttachedGrenade; }
+	FORCEINLINE UBuffComponent* GetBuffComponent() const { return BuffComponent; }
 };

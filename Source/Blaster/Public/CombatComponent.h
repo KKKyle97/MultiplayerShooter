@@ -9,6 +9,7 @@
 #include "Weapon/CombatState.h"
 #include "CombatComponent.generated.h"
 
+class AProjectile;
 class ABlasterHUD;
 class ABlasterPlayerController;
 class ABlasterCharacter;
@@ -31,7 +32,35 @@ public:
 
 	void FireButtonPressed(bool bPressed);
 
+	UFUNCTION(BlueprintCallable)
+	void ShotgunShellReload();
+
 	void UpdateAmmoValues();
+	void JumpToShotgunEnd();
+	void UpdateShotgunAmmoValues();
+
+	UPROPERTY(ReplicatedUsing=OnRep_Grenades)
+	int32 Grenades = 4;
+
+	UFUNCTION()
+	void OnRep_Grenades();
+
+	UPROPERTY(EditAnywhere)
+	int32 MaxGrenades = 4;
+
+	void UpdateHUDGrenades();
+
+	UFUNCTION(BlueprintCallable)
+	void ThrowGrenadeFinished();
+
+	UFUNCTION(BlueprintCallable)
+	void LaunchGrenade();
+
+	UFUNCTION(Server, Reliable)
+	void ServerLaunchGrenade(const FVector_NetQuantize& Target);
+
+	void PickupAmmo(EWeaponType WeaponType, int32 AmmoAmount);
+
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 protected:
@@ -61,6 +90,22 @@ protected:
 	void HandleReload();
 
 	int32 AmountToReload();
+
+	void ThrowGrenade();
+
+	UFUNCTION(Server, Reliable)
+	void ServerThrowGrenade();
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AProjectile> GrenadeClass;
+
+	void DropEquippedWeapon();
+	void AttachActorToRightHand(AActor* ActorToAttach);
+	void AttachActorToLeftHand(AActor* ActorToAttach);
+	void UpdateCarriedAmmo();
+	void PlayEquipWeaponSound();
+	void ReloadEmptyWeapon();
+	void ShowAttachedGrenade(bool bShowGrenade);
 
 private:
 	UPROPERTY()
@@ -130,6 +175,9 @@ private:
 	TMap<EWeaponType, int32> CarriedAmmoMap;
 
 	UPROPERTY(EditAnywhere)
+	int32 MaxCarriedAmmo = 500;
+
+	UPROPERTY(EditAnywhere)
 	int32 StartingARAmmo = 30;
 
 	UPROPERTY(EditAnywhere)
@@ -147,6 +195,9 @@ private:
 	UPROPERTY(EditAnywhere)
 	int32 StartingSniperAmmo = 0;
 
+	UPROPERTY(EditAnywhere)
+	int32 StartingGrenadeLauncherAmmo = 0;
+
 	void InitializeCarriedAmmo();
 
 	UPROPERTY(ReplicatedUsing = OnRep_CombatState)
@@ -154,4 +205,8 @@ private:
 
 	UFUNCTION()
 	void OnRep_CombatState();
+
+
+public:
+	FORCEINLINE int32 GetGrenades() const { return Grenades; }
 };
