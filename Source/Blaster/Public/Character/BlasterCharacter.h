@@ -10,6 +10,8 @@
 #include "Weapon/CombatState.h"
 #include "BlasterCharacter.generated.h"
 
+class ULagCompensationComponent;
+class UBoxComponent;
 class UBuffComponent;
 class ABlasterPlayerState;
 class ABlasterPlayerController;
@@ -38,8 +40,14 @@ public:
 	void PlayElimMontage();
 	void PlayHitReactMontage();
 	void PlayThrowGrenadeMontage();
+	void DropOrDestroyWeapon(AWeapon* Weapon);
+	void DropOrDestroyWeapons();
 	void Elim();
 	void UpdateHUDHealth();
+	void UpdateHUDShield();
+	void UpdateHUDAmmo();
+
+	void SpawnDefaultWeapon();
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastElim();
@@ -51,6 +59,9 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void ShowSniperScopeWidget(bool bShowScope);
+
+	UPROPERTY()
+	TMap<FName, UBoxComponent*> HitCollisionBoxes;
 
 protected:
 	// Called when the game starts or when spawned
@@ -79,6 +90,64 @@ protected:
 	void RotateInPlace(float DeltaTime);
 	virtual void Jump() override;
 
+	/*
+	 * Hitboxes used for server-side rewind
+	 */
+
+	UPROPERTY(EditAnywhere)
+	UBoxComponent* HeadBox;
+
+	UPROPERTY(EditAnywhere)
+	UBoxComponent* PelvisBox;
+
+	UPROPERTY(EditAnywhere)
+	UBoxComponent* Spine02Box;
+
+	UPROPERTY(EditAnywhere)
+	UBoxComponent* Spine03Box;
+
+	UPROPERTY(EditAnywhere)
+	UBoxComponent* UpperarmLeftBox;
+
+	UPROPERTY(EditAnywhere)
+	UBoxComponent* UpperarmRightBox;
+
+	UPROPERTY(EditAnywhere)
+	UBoxComponent* LowerarmLeftBox;
+
+	UPROPERTY(EditAnywhere)
+	UBoxComponent* LowerarmRightBox;
+
+	UPROPERTY(EditAnywhere)
+	UBoxComponent* HandLeftBox;
+
+	UPROPERTY(EditAnywhere)
+	UBoxComponent* HandRightBox;
+
+	UPROPERTY(EditAnywhere)
+	UBoxComponent* BackpackBox;
+
+	UPROPERTY(EditAnywhere)
+	UBoxComponent* BlanketBox;
+
+	UPROPERTY(EditAnywhere)
+	UBoxComponent* ThighLeftBox;
+
+	UPROPERTY(EditAnywhere)
+	UBoxComponent* ThighRightBox;
+
+	UPROPERTY(EditAnywhere)
+	UBoxComponent* CalfLeftBox;
+
+	UPROPERTY(EditAnywhere)
+	UBoxComponent* CalfRightBox;
+
+	UPROPERTY(EditAnywhere)
+	UBoxComponent* FootLeftBox;
+
+	UPROPERTY(EditAnywhere)
+	UBoxComponent* FootRightBox;
+
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Camera")
 	USpringArmComponent* SpringArmComponent;
@@ -103,6 +172,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	UBuffComponent* BuffComponent;
+
+	UPROPERTY(VisibleAnywhere)
+	ULagCompensationComponent* LagCompensationComponent;
 
 	UFUNCTION(Server, Reliable)
 	void ServerEquipButtonPressed();
@@ -151,6 +223,19 @@ private:
 
 	UFUNCTION()
 	void OnRep_Health(float LastHealth);
+
+	/**
+	 * @brief Player Shield
+	 */
+
+	UPROPERTY(EditAnywhere, Category = "Player Stats")
+	float MaxShield = 100.f;
+
+	UPROPERTY(ReplicatedUsing = OnRep_Shield, EditAnywhere, Category = "Player Stats")
+	float Shield;
+
+	UFUNCTION()
+	void OnRep_Shield(float LastShield);
 
 	UPROPERTY()
 	ABlasterPlayerController* BlasterPlayerController;
@@ -209,6 +294,12 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* AttachedGrenade;
 
+	/**
+	 * Default Weapon
+	 */
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AWeapon> DefaultWeapon;
+
 public:
 	void SetOverlappingWeapon(AWeapon* Weapon);
 	bool IsWeaponEquipped();
@@ -222,12 +313,17 @@ public:
 	FORCEINLINE bool ShouldRotateRootBone() const { return bRotateRootBone; }
 	FORCEINLINE bool IsElimmed() const { return bElimmed; }
 	FORCEINLINE float GetHealth() const { return Health; }
+	FORCEINLINE float GetShield() const { return Shield; }
 	FORCEINLINE void SetHealth(float Amount) { Health = Amount; }
+	FORCEINLINE void SetShield(float Amount) { Shield = Amount; }
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
+	FORCEINLINE float GetMaxShield() const { return MaxShield; }
 	ECombatState GetCombatState();
 	FORCEINLINE UCombatComponent* GetCombatComponent() { return CombatComponent; }
 	FORCEINLINE bool GetDisableGameplay() const { return bDisableGameplay; }
 	FORCEINLINE UAnimMontage* GetReloadMontage() const { return ReloadMontage; }
 	FORCEINLINE UStaticMeshComponent* GetAttachedGrenade() const { return AttachedGrenade; }
 	FORCEINLINE UBuffComponent* GetBuffComponent() const { return BuffComponent; }
+	bool IsLocallyReloading();
+	FORCEINLINE ULagCompensationComponent* GetLagCompensation() { return LagCompensationComponent; }
 };

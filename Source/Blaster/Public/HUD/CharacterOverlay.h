@@ -8,6 +8,8 @@
 
 class UTextBlock;
 class UProgressBar;
+class UImage;
+class UWidgetAnimation;
 /**
  * 
  */
@@ -22,6 +24,12 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* HealthText;
+
+	UPROPERTY(meta = (BindWidget))
+	UProgressBar* ShieldBar;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* ShieldText;
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* ScoreAmount;
@@ -46,4 +54,10 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* GrenadeText;
+
+	UPROPERTY(meta = (BindWidget))
+	UImage* HighPingImage;
+
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation* HighPingAnimation;
 };
