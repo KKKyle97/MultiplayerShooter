@@ -119,7 +119,7 @@ public:
 
 protected:
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Replicated)
 	bool bUseServerSideRewind = false;
 
 	virtual void BeginPlay() override;
@@ -151,6 +151,9 @@ protected:
 
 	UPROPERTY()
 	ABlasterPlayerController* BlasterPlayerController;
+
+	UFUNCTION()
+	void OnPingTooHigh(bool bPingTooHigh);
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
