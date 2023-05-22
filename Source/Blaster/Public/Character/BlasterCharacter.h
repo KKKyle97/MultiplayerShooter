@@ -10,6 +10,8 @@
 #include "Weapon/CombatState.h"
 #include "BlasterCharacter.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnLeftGame);
+class UNiagaraSystem;
 class ULagCompensationComponent;
 class UBoxComponent;
 class UBuffComponent;
@@ -21,6 +23,7 @@ class UCameraComponent;
 class USpringArmComponent;
 class UWidgetComponent;
 class USoundCue;
+class UNiagaraComponent;
 UCLASS()
 class BLASTER_API ABlasterCharacter : public ACharacter, public IBlasterDamagableInterface
 {
@@ -47,7 +50,7 @@ public:
 	void PlaySwapMontage();
 	void DropOrDestroyWeapon(AWeapon* Weapon);
 	void DropOrDestroyWeapons();
-	void Elim();
+	void Elim(bool bPlayerLeftGame);
 	void UpdateHUDHealth();
 	void UpdateHUDShield();
 	void UpdateHUDAmmo();
@@ -55,7 +58,7 @@ public:
 	void SpawnDefaultWeapon();
 
 	UFUNCTION(NetMulticast, Reliable)
-	void MulticastElim();
+	void MulticastElim(bool bPlayerLeftGame);
 	virtual void OnRep_ReplicatedMovement() override;
 	virtual void Destroyed() override;
 
@@ -69,6 +72,18 @@ public:
 	TMap<FName, UBoxComponent*> HitCollisionBoxes;
 
 	bool bFinishedSwapping;
+
+	FOnLeftGame OnLeftGame;
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastGainedTheLead();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastLostTheLead();
+
+
+	UFUNCTION(Server, Reliable)
+	void ServerLeaveGame();
 
 protected:
 	// Called when the game starts or when spawned
@@ -264,6 +279,8 @@ private:
 
 	void ElimTimerFinished();
 
+	bool bLeftGame = false;
+
 	UPROPERTY(VisibleAnywhere)
 	UTimelineComponent* DissolveTimeline;
 	FOnTimelineFloat DissolveTrack;
@@ -296,6 +313,12 @@ private:
 
 	UPROPERTY()
 	ABlasterPlayerState* BlasterPlayerState;
+
+	UPROPERTY(EditAnywhere)
+	UNiagaraSystem* CrownSystem;
+
+	UPROPERTY()
+	UNiagaraComponent* CrownComponent;
 
 	/**
 	 * Grenade
