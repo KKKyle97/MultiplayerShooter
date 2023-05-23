@@ -10,6 +10,8 @@
 #include "Weapon/CombatState.h"
 #include "BlasterCharacter.generated.h"
 
+class ABlasterGameMode;
+enum class ETeam : uint8;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnLeftGame);
 class UNiagaraSystem;
 class ULagCompensationComponent;
@@ -81,9 +83,10 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastLostTheLead();
 
-
 	UFUNCTION(Server, Reliable)
 	void ServerLeaveGame();
+
+	void SetTeamColor(ETeam Team);
 
 protected:
 	// Called when the game starts or when spawned
@@ -227,7 +230,7 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	UAnimMontage* SwapAnimationMontage;
 
-	void HideCameraIfCharacterIsClose();
+	void HideCharacterIfCameraIsClose();
 
 	bool bRotateRootBone;
 	float TurnThreshold = 0.5f;
@@ -265,6 +268,9 @@ private:
 	UPROPERTY()
 	ABlasterPlayerController* BlasterPlayerController;
 
+	UPROPERTY()
+	ABlasterGameMode* BlasterGameMode;
+
 
 	/*
 	 * Elimination
@@ -295,8 +301,27 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = Elim)
 	UMaterialInstanceDynamic* DynamicDissolveMaterialInstance;
 
-	UPROPERTY(EditAnywhere, Category = Elim)
+	UPROPERTY(VisibleAnywhere, Category = Elim)
 	UMaterialInstance* DissolveMaterialInstance;
+
+	/**
+	 * Team Colors
+	 */
+
+	UPROPERTY(EditAnywhere, Category = Elim)
+	UMaterialInstance* RedDissolveMatInst;
+
+	UPROPERTY(EditAnywhere, Category = Elim)
+	UMaterialInstance* RedMaterial;
+
+	UPROPERTY(EditAnywhere, Category = Elim)
+	UMaterialInstance* BlueDissolveMatInst;
+
+	UPROPERTY(EditAnywhere, Category = Elim)
+	UMaterialInstance* BlueMaterial;
+
+	UPROPERTY(EditAnywhere, Category = Elim)
+	UMaterialInstance* OriginalMaterial;
 
 	/*
 	 * Elim bot

@@ -26,6 +26,7 @@ public:
 	ABlasterGameMode();
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABlasterPlayerController* VictimController, ABlasterPlayerController* AttackerController);
+	virtual float CalculateDamage(AController* Attacker, AController* Victim, float BaseDamage);
 	virtual void RequestRespawn(ACharacter* ElimmedCharacter, AController* ElimmedController);
 	void PlayerLeftGame(ABlasterPlayerState* LeavingPlayer);
 
@@ -39,6 +40,8 @@ public:
 	float CooldownTime = 10.f;
 
 	float LevelStartingTime = 0.f;
+
+	bool bTeamsMatch = false;
 
 protected:
 	virtual void BeginPlay() override;

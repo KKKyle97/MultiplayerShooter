@@ -35,6 +35,12 @@ public:
 	UTextBlock* ScoreAmount;
 
 	UPROPERTY(meta = (BindWidget))
+	UTextBlock* MatchCountdownText;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* GrenadeText;
+
+	UPROPERTY(meta = (BindWidget))
 	UTextBlock* DefeatsText;
 
 	UPROPERTY(meta = (BindWidget))
@@ -50,10 +56,13 @@ public:
 	UTextBlock* CarriedAmmoAmount;
 
 	UPROPERTY(meta = (BindWidget))
-	UTextBlock* MatchCountdownText;
+	UTextBlock* BlueTeamScore;
 
 	UPROPERTY(meta = (BindWidget))
-	UTextBlock* GrenadeText;
+	UTextBlock* RedTeamScore;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* ScoreSpacerText;
 
 	UPROPERTY(meta = (BindWidget))
 	UImage* HighPingImage;

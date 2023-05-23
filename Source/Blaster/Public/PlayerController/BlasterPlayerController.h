@@ -6,6 +6,8 @@
 #include "GameFramework/PlayerController.h"
 #include "BlasterPlayerController.generated.h"
 
+class ABlasterGameState;
+class ABlasterPlayerState;
 class UReturnToMainMenu;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHighPingDelegate, bool, bPingTooHigh);
 
@@ -30,14 +32,18 @@ public:
 	void SetHUDMatchCountdown(float CountdownTime);
 	void SetHUDAnnouncementCountdown(float CountdownTime);
 	void SetHUDGrenades(int32 Grenade);
+	void SetHUDRedTeamScores(int32 TeamScores);
+	void SetHUDBlueTeamScores(int32 TeamScores);
+	void InitTeamScores();
+	void HideTeamScores();
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	virtual float GetServerTime();
 	virtual void ReceivedPlayer() override;
-	void OnMatchStateSet(FName State);
-	void HandleMatchHasStarted();
+	void OnMatchStateSet(FName State, bool bTeamsMatch = false);
+	void HandleMatchHasStarted(bool bTeamsMatch = false);
 	void HandleCooldown();
 	void BroadcastElim(APlayerState* Attacker, APlayerState* Victim);
 
@@ -83,6 +89,15 @@ protected:
 
 	UFUNCTION(Client, Reliable)
 	void ClientJoinMidgame(FName StateOfMatch, float Warmup, float Match, float Cooldown, float StartingTime);
+
+	UPROPERTY(ReplicatedUsing=OnRep_ShowTeamScores)
+	bool bShowTeamScores = false;
+
+	UFUNCTION()
+	void OnRep_ShowTeamScores();
+
+	FString GetInfoText(const TArray<ABlasterPlayerState*>& Players);
+	FString GetTeamsInfoText(ABlasterGameState* BlasterGameState);
 private:
 	UPROPERTY()
 	class ABlasterHUD* BlasterHUD;
