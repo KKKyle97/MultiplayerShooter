@@ -117,6 +117,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	float FireDamage = 10.f;
 
+	UPROPERTY(EditAnywhere)
+	float HeadShotDamage = 40.f;
+
 protected:
 
 	UPROPERTY(EditAnywhere, Replicated)
@@ -211,5 +214,7 @@ public:
 	FORCEINLINE EWeaponType GetWeaponType() { return WeaponType; }
 	FORCEINLINE int32 GetAmmo() const { return Ammo; }
 	FORCEINLINE int32 GetMagCapacity() const { return MagCapacity; }
+	FORCEINLINE int32 GetDamage() const { return FireDamage; }
+	FORCEINLINE float GetHeadShotDamage() const { return HeadShotDamage; }
 
 };

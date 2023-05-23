@@ -487,16 +487,17 @@ FFramePackage ULagCompensationComponent::GetFrameToCheck(ABlasterCharacter* HitC
 }
 
 void ULagCompensationComponent::ServerScoreRequest_Implementation(ABlasterCharacter* HitCharacter,
-                                                                  const FVector_NetQuantize& TraceStart, const FVector_NetQuantize& HitLocation, float HitTime, AWeapon* DamageCauser)
+                                                                  const FVector_NetQuantize& TraceStart, const FVector_NetQuantize& HitLocation, float HitTime)
 {
 	FServerSideRewindResult Confirm = ServerSideRewind(HitCharacter, TraceStart, HitLocation, HitTime);
 
-	if (BlasterCharacter && HitCharacter && Confirm.bHitConfirmed && DamageCauser)
+	if (BlasterCharacter && HitCharacter && Confirm.bHitConfirmed && BlasterCharacter->GetEquippedWeapon())
 	{
+		const float Damage = Confirm.bHeadShot ? BlasterCharacter->GetEquippedWeapon()->GetHeadShotDamage() : BlasterCharacter->GetEquippedWeapon()->GetDamage();
 		UGameplayStatics::ApplyDamage(HitCharacter,
-			DamageCauser->FireDamage,
+			Damage,
 			BlasterCharacter->Controller,
-			DamageCauser,
+			BlasterCharacter->GetEquippedWeapon(),
 			UDamageType::StaticClass()
 		);
 	}
@@ -516,7 +517,7 @@ void ULagCompensationComponent::ShotgunServerScoreRequest_Implementation(
 		float TotalDamage = 0;
 		if (Confirm.HeadShots.Contains(HitCharacter))
 		{
-			float HeadShotDamage = Confirm.HeadShots[HitCharacter] * HitCharacter->GetEquippedWeapon()->FireDamage;
+			float HeadShotDamage = Confirm.HeadShots[HitCharacter] * HitCharacter->GetEquippedWeapon()->GetHeadShotDamage();
 			TotalDamage += HeadShotDamage;
 		}
 
@@ -540,11 +541,13 @@ void ULagCompensationComponent::ProjectileServerScoreRequest_Implementation(ABla
 	const FVector_NetQuantize& TraceStart, const FVector_NetQuantize100& InitialVelocity, float HitTime)
 {
 	FServerSideRewindResult Confirm = ProjectileServerSideRewind(HitCharacter, TraceStart, InitialVelocity, HitTime);
-	if (BlasterCharacter && HitCharacter && Confirm.bHitConfirmed)
+	if (BlasterCharacter && HitCharacter && Confirm.bHitConfirmed && BlasterCharacter->GetEquippedWeapon())
 	{
+		const float Damage = Confirm.bHeadShot ? BlasterCharacter->GetEquippedWeapon()->GetHeadShotDamage() : BlasterCharacter->GetEquippedWeapon()->GetDamage();
+
 		UGameplayStatics::ApplyDamage(
 			HitCharacter,
-			BlasterCharacter->GetEquippedWeapon()->FireDamage,
+			Damage,
 			BlasterCharacter->Controller,
 			BlasterCharacter->GetEquippedWeapon(),
 			UDamageType::StaticClass()
