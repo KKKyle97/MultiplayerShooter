@@ -66,6 +66,15 @@ public:
 protected:
 	virtual void BeginPlay() override;
 private:
+	UPROPERTY(EditAnywhere)
+	float ElimAnnouncementTime = 2.5f;
+
+	UFUNCTION()
+	void ElimAnnouncementTimerFinished(UElimAnnoucement* MsgToRemove);
+
+	UPROPERTY()
+	TArray<UElimAnnoucement*> ElimMessages;
+
 	FHUDPackage HUDPackage;
 
 	UPROPERTY()
