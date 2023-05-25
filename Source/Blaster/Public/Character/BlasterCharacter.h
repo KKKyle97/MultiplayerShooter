@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "TurningInPlace.h"
+#include "Team.h"
 #include "Blaster/Interface/BlasterDamagableInterface.h"
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Character.h"
@@ -11,7 +12,6 @@
 #include "BlasterCharacter.generated.h"
 
 class ABlasterGameMode;
-enum class ETeam : uint8;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnLeftGame);
 class UNiagaraSystem;
 class ULagCompensationComponent;
@@ -26,6 +26,7 @@ class USpringArmComponent;
 class UWidgetComponent;
 class USoundCue;
 class UNiagaraComponent;
+
 UCLASS()
 class BLASTER_API ABlasterCharacter : public ACharacter, public IBlasterDamagableInterface
 {
@@ -108,6 +109,8 @@ protected:
 	void FireButtonPressed();
 	void FireButtonReleased();
 	void GrenadeButtonPressed();
+	void SetSpawnPoint();
+	void OnPlayerStateInitialized();
 
 	UFUNCTION()
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* ControllerInstigator, AActor* DamageCauser);
@@ -384,4 +387,7 @@ public:
 	FORCEINLINE UBuffComponent* GetBuffComponent() const { return BuffComponent; }
 	bool IsLocallyReloading();
 	FORCEINLINE ULagCompensationComponent* GetLagCompensation() { return LagCompensationComponent; }
+	bool IsHoldingTheFlag() const;
+	ETeam GetTeam();
+	void SetHoldingTheFlag(bool bHolding);
 };

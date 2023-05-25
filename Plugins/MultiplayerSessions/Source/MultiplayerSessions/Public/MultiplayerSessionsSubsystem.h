@@ -35,7 +35,8 @@ public:
 	void DestroySession();
 	void StartSession();
 
-	float testvar;
+	int32 DesiredNumPublicConnections{};
+	FString DesiredMatchType{};
 
 	/*
 	 * Custom delegate

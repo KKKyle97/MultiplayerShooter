@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "WeaponTypes.h"
 #include "GameFramework/Actor.h"
+#include "Team.h"
 #include "Weapon.generated.h"
 
 class ABlasterPlayerController;
@@ -45,7 +46,7 @@ public:
 	virtual void Fire(const FVector& HitTarget);
 	virtual void OnRep_Owner() override;
 	void SetHUDAmmo();
-	void Dropped();
+	virtual void Dropped();
 	void AddAmmo(int32 AmmoToAdd);
 	FVector TraceEndWithScatter(const FVector& HitTarget);
 
@@ -203,10 +204,14 @@ private:
 	UPROPERTY(EditAnywhere)
 	EWeaponType WeaponType;
 
+	UPROPERTY(EditAnywhere)
+	ETeam Team;
+
 public:
 	void SetWeaponState(EWeaponState CurrentWeaponState);
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphereComponent; }
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
+	FORCEINLINE UWidgetComponent* GetPickupWidget() const { return PickupWidget; }
 	FORCEINLINE float GetZoomedFOV() const { return ZoomedFOV; }
 	FORCEINLINE float GetZoomInterpSpeed() const { return ZoomInterpSpeed; }
 	bool IsEmpty();
@@ -216,5 +221,5 @@ public:
 	FORCEINLINE int32 GetMagCapacity() const { return MagCapacity; }
 	FORCEINLINE int32 GetDamage() const { return FireDamage; }
 	FORCEINLINE float GetHeadShotDamage() const { return HeadShotDamage; }
-
+	FORCEINLINE ETeam GetTeam() const { return Team; }
 };

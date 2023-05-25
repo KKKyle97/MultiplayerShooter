@@ -56,6 +56,12 @@ public:
 	UPROPERTY(EditAnywhere)
 	int32 MaxGrenades = 4;
 
+	UPROPERTY(ReplicatedUsing=OnRep_HoldingTheFlag)
+	bool bHoldingTheFlag = false;
+
+	UFUNCTION()
+	void OnRep_HoldingTheFlag();
+
 	void UpdateHUDGrenades();
 
 	UFUNCTION(BlueprintCallable)
@@ -68,6 +74,7 @@ public:
 	void ServerLaunchGrenade(const FVector_NetQuantize& Target);
 
 	void PickupAmmo(EWeaponType WeaponType, int32 AmmoAmount);
+
 	bool bLocallyReloading = false;
 
 protected:
@@ -123,6 +130,7 @@ protected:
 	void DropEquippedWeapon();
 	void AttachActorToRightHand(AActor* ActorToAttach);
 	void AttachActorToLeftHand(AActor* ActorToAttach);
+	void AttachFlagToLeftHand(AWeapon* Flag);
 	void AttachActorToBackpack(AActor* ActorToAttach);
 	void UpdateCarriedAmmo();
 	void PlayEquipWeaponSound(AWeapon* WeaponToEquip);
@@ -146,6 +154,12 @@ private:
 
 	UPROPERTY(ReplicatedUsing="OnRep_SecondaryWeapon")
 	AWeapon* SecondaryWeapon;
+
+	UPROPERTY(ReplicatedUsing="OnRep_TheFlag")
+	AWeapon* TheFlag;
+
+	UFUNCTION()
+	void OnRep_TheFlag();
 
 	UPROPERTY(ReplicatedUsing = "OnRep_Aiming")
 	bool bIsAiming = false;

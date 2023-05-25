@@ -51,7 +51,7 @@ void ABlasterGameState::BlueTeamScores()
 	ABlasterPlayerController* BPlayer = Cast<ABlasterPlayerController>(GetWorld()->GetFirstPlayerController());
 	if (BPlayer)
 	{
-		BPlayer->SetHUDRedTeamScores(BlueTeamScore);
+		BPlayer->SetHUDBlueTeamScores(BlueTeamScore);
 	}
 }
 
@@ -69,6 +69,6 @@ void ABlasterGameState::OnRep_BlueTeamScore()
 	ABlasterPlayerController* BPlayer = Cast<ABlasterPlayerController>(GetWorld()->GetFirstPlayerController());
 	if (BPlayer)
 	{
-		BPlayer->SetHUDRedTeamScores(BlueTeamScore);
+		BPlayer->SetHUDBlueTeamScores(BlueTeamScore);
 	}
 }
